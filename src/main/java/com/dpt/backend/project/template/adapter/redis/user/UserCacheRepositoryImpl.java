@@ -12,11 +12,11 @@ public class UserCacheRepositoryImpl implements UserCacheRepository {
         this.redisAdapter = redisAdapter;
     }
 
-    void getCachedUserDetail(Long userId) {
+    public void getCachedUserDetail(Long userId) {
         redisAdapter.getValue("");
     }
 
-    void setUserDetailTemporarily(Long userId) {
+    public void setUserDetailTemporarily(Long userId) {
         redisAdapter.setValue("", "", 1000L);
     }
 }
