@@ -10,12 +10,39 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/check")
 @RequiredArgsConstructor
 public class ReadyzRestController {
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+    private final org.springframework.data.redis.connection.RedisConnectionFactory redisConnectionFactory;
+
     @GetMapping("/readyz")
-    public ResponseEntity<String> login() {
-        // DB check
+    public ResponseEntity<com.dpt.backend.project.template.api.rest.check.dto.ReadyzResponse> readyCheck() {
+        String sqlStatus = "OK";
+        String redisStatus = "OK";
+        boolean healthy = true;
 
-        // redis check
+        try {
+            jdbcTemplate.execute("SELECT 1");
+        } catch (Exception e) {
+            sqlStatus = "FAILED";
+            healthy = false;
+        }
 
-        return ResponseEntity.ok().body("OK");
+        try {
+            redisConnectionFactory.getConnection().ping();
+        } catch (Exception e) {
+            redisStatus = "FAILED";
+            healthy = false;
+        }
+
+        com.dpt.backend.project.template.api.rest.check.dto.ReadyzResponse response = 
+            com.dpt.backend.project.template.api.rest.check.dto.ReadyzResponse.builder()
+                .sql(sqlStatus)
+                .redis(redisStatus)
+                .build();
+
+        if (healthy) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(503).body(response);
+        }
     }
 }

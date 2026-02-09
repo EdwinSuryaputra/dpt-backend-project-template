@@ -15,12 +15,20 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
     @Query(value = """ 
             SELECT *
             FROM users u
-            WHERE MATCH(u.username, u.full_name, u.email) AGAINST (:query IN NATURAL LANGUAGE MODE)
+            WHERE to_tsvector('simple', 
+                coalesce(u.username, '') || ' ' || 
+                coalesce(u.full_name, '') || ' ' || 
+                coalesce(u.email, '')
+            ) @@ plainto_tsquery('simple', :query)
                 AND u.deleted_at IS NULL AND u.deleted_by IS NULL
             """, countQuery = """
             SELECT COUNT(*)
             FROM users u
-            WHERE MATCH(u.username, u.full_name, u.email) AGAINST (:query IN NATURAL LANGUAGE MODE)
+            WHERE to_tsvector('simple', 
+                coalesce(u.username, '') || ' ' || 
+                coalesce(u.full_name, '') || ' ' || 
+                coalesce(u.email, '')
+            ) @@ plainto_tsquery('simple', :query)
                 AND u.deleted_at IS NULL AND u.deleted_by IS NULL
             """, nativeQuery = true)
     Page<User> findAllFullTextPaginated(@Param("query") String q, Pageable pageable);

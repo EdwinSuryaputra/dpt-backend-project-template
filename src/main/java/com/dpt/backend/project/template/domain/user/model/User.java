@@ -10,6 +10,8 @@ import java.util.Date;
 @Table(name = "users")
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
